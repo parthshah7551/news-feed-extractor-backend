@@ -1,0 +1,15 @@
+{
+  "fund": true,
+  "investment trust": true,
+  "ETF": true,
+  "unit trust": true,
+  "OEIC": true,
+  "SICAV": true,
+  "fund manager": true,
+  "asset manager": true,
+  "portfolio manager": true,
+  "NAV": true,
+  "open ended": true,
+  "discount": true,
+  "premium": true
+}
