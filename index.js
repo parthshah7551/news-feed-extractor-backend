@@ -34,6 +34,56 @@ const masterKeywordsDetailsFunction = async () => {
     });
   });
 };
+const addKeywordFunction = async (body) => {
+  const eistingMasterKeywordsResponse = await masterKeywordsDetailsFunction();
+  const updatedData = { ...JSON.parse(eistingMasterKeywordsResponse), ...body };
+  return new Promise((resolve, reject) => {
+    fs.writeFile(
+      masterKeywordsFilePath,
+      JSON.stringify(updatedData),
+      "utf8",
+      (err, data) => {
+        if (err) {
+          console.error("Error while writting the file:", err);
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      }
+    );
+  });
+};
+const writeURLFunction = async (parsedExistingURL) => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(
+      urlKeywordsFilePath,
+      JSON.stringify(parsedExistingURL),
+      "utf8",
+      (err, data) => {
+        if (err) {
+          console.error("Error while writting the file:", err);
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      }
+    );
+  });
+};
+
+const addKeywordToURLFunction = async (inputKeyword) => {
+  const existingURL = await urlKeywordsDetailsFunction();
+  console.log("existingURL: ", existingURL);
+  const parsedExistingURL = JSON.parse(existingURL);
+  Object.keys(parsedExistingURL).forEach((item) => {
+    parsedExistingURL[item].keywords = {
+      ...parsedExistingURL[item].keywords,
+      ...inputKeyword,
+    };
+  });
+  await writeURLFunction(parsedExistingURL);
+  console.log("parsedExistingURL: ", parsedExistingURL);
+};
 
 app.get("/urlKeywordsDetails", async (req, res) => {
   const responseDetails = await urlKeywordsDetailsFunction();
@@ -42,6 +92,15 @@ app.get("/urlKeywordsDetails", async (req, res) => {
 
 app.get("/masterKeywordsDetails", async (req, res) => {
   const responseDetails = await masterKeywordsDetailsFunction();
+  res.send(responseDetails);
+});
+app.post("/addURL", async (req, res) => {
+  const responseDetails = await writeURLFunction();
+  res.send(responseDetails);
+});
+app.post("/addKeyword", async (req, res) => {
+  const responseDetails = await addKeywordFunction(req.body);
+  await addKeywordToURLFunction(req.body);
   res.send(responseDetails);
 });
 
