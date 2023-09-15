@@ -53,7 +53,7 @@ const addKeywordFunction = async (body) => {
     );
   });
 };
-const writeURLFunction = async (parsedExistingURL) => {
+const addURLFunction = async (parsedExistingURL) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(
       urlKeywordsFilePath,
@@ -81,7 +81,7 @@ const addKeywordToURLFunction = async (inputKeyword) => {
       ...inputKeyword,
     };
   });
-  await writeURLFunction(parsedExistingURL);
+  await addURLFunction(parsedExistingURL);
   console.log("parsedExistingURL: ", parsedExistingURL);
 };
 
@@ -95,7 +95,17 @@ app.get("/masterKeywordsDetails", async (req, res) => {
   res.send(responseDetails);
 });
 app.post("/addURL", async (req, res) => {
-  const responseDetails = await writeURLFunction();
+  const urlDetails = await urlKeywordsDetailsFunction();
+  const masterKeywordsDetails = await masterKeywordsDetailsFunction();
+  const newURLKeywordsObject = {
+    ...JSON.parse(urlDetails),
+    [req.body.url]: {
+      isChecked: true,
+      keywords: JSON.parse(masterKeywordsDetails),
+    },
+  };
+
+  const responseDetails = await addURLFunction(newURLKeywordsObject);
   res.send(responseDetails);
 });
 app.post("/addKeyword", async (req, res) => {
