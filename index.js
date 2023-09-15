@@ -85,6 +85,13 @@ const addKeywordToURLFunction = async (inputKeyword) => {
   console.log("parsedExistingURL: ", parsedExistingURL);
 };
 
+const removeURLFunction = async (url) => {
+  const urlDetails = await urlKeywordsDetailsFunction();
+  const parsedURL = JSON.parse(urlDetails);
+  delete parsedURL[url];
+  await addURLFunction(parsedURL);
+};
+
 app.get("/urlKeywordsDetails", async (req, res) => {
   const responseDetails = await urlKeywordsDetailsFunction();
   res.send(responseDetails);
@@ -111,6 +118,11 @@ app.post("/addURL", async (req, res) => {
 app.post("/addKeyword", async (req, res) => {
   const responseDetails = await addKeywordFunction(req.body);
   await addKeywordToURLFunction(req.body);
+  res.send(responseDetails);
+});
+
+app.delete("/removeURL", async (req, res) => {
+  const responseDetails = await removeURLFunction(req.query.url);
   res.send(responseDetails);
 });
 
