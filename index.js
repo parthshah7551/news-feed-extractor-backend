@@ -91,6 +91,18 @@ const removeURLFunction = async (url) => {
   delete parsedURL[url];
   await addURLFunction(parsedURL);
 };
+const editURLFunction = async (urlData) => {
+  try {
+    const urlDetails = await urlKeywordsDetailsFunction();
+    const editedURLDetails = {
+      ...JSON.parse(urlDetails),
+      ...urlData,
+    };
+    await addURLFunction(editedURLDetails);
+  } catch (error) {
+    console.log("error: ", error);
+  }
+};
 
 app.get("/urlKeywordsDetails", async (req, res) => {
   const responseDetails = await urlKeywordsDetailsFunction();
@@ -118,6 +130,10 @@ app.post("/addURL", async (req, res) => {
 app.post("/addKeyword", async (req, res) => {
   const responseDetails = await addKeywordFunction(req.body);
   await addKeywordToURLFunction(req.body);
+  res.send(responseDetails);
+});
+app.put("/editURL", async (req, res) => {
+  const responseDetails = await editURLFunction(req.body);
   res.send(responseDetails);
 });
 
