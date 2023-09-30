@@ -1,0 +1,27 @@
+{
+  "name": "news-feed-extractor-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/parthshah7551/news-feed-extractor-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/parthshah7551/news-feed-extractor-backend/issues"
+  },
+  "homepage": "https://github.com/parthshah7551/news-feed-extractor-backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "fs-extra": "^11.1.1",
+    "nodemon": "^3.0.1"
+  }
+}
