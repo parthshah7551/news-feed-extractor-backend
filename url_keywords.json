@@ -1,23 +1,5 @@
 {
   "https://www.ft.com/markets": {
-    "isChecked": true,
-    "keywords": {
-      "fund": false,
-      "investment trust": true,
-      "ETF": true,
-      "unit trust": true,
-      "OEIC": true,
-      "SICAV": true,
-      "fund manager": true,
-      "asset manager": true,
-      "portfolio manager": true,
-      "NAV": true,
-      "open ended": true,
-      "discount": true,
-      "premium": true
-    }
-  },
-  "url2": {
     "isChecked": false,
     "keywords": {
       "fund": false,
@@ -28,11 +10,33 @@
       "SICAV": true,
       "fund manager": true,
       "asset manager": true,
-      "portfolio manager": true,
+      "portfolio manager": false,
       "NAV": true,
+      "open ended": true,
+      "discount": false,
+      "premium": true
+    },
+    "fromDate": "2022-11-18",
+    "toDate": "2022-11-20"
+  },
+  "url2": {
+    "isChecked": true,
+    "keywords": {
+      "fund": false,
+      "investment trust": true,
+      "ETF": true,
+      "unit trust": true,
+      "OEIC": true,
+      "SICAV": false,
+      "fund manager": false,
+      "asset manager": false,
+      "portfolio manager": false,
+      "NAV": false,
       "open ended": true,
       "discount": true,
       "premium": true
-    }
+    },
+    "fromDate": "2022-09-02",
+    "toDate": "2022-10-02"
   }
 }
