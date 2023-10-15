@@ -5,7 +5,7 @@ const app = express();
 const cors = require("cors");
 app.use(express.json());
 app.use(cors());
-const PORT = 5000;
+const PORT = process.argv[2] || 5000;
 const urlKeywordsFilePath = "./url_keywords.json";
 const masterKeywordsFilePath = "./master_keywords.json";
 
@@ -103,6 +103,10 @@ const editURLFunction = async (urlData) => {
     console.log("error: ", error);
   }
 };
+
+app.get("/", async (req, res) => {
+  res.send("OK");
+});
 
 app.get("/urlKeywordsDetails", async (req, res) => {
   const responseDetails = await urlKeywordsDetailsFunction();
