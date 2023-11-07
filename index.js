@@ -9,7 +9,7 @@ const PORT = process.argv[2] || 5000;
 const urlKeywordsFilePath = "./url_keywords.json";
 const masterKeywordsFilePath = "./master_keywords.json";
 
-const urlKeywordsDetailsFunction = async () => {
+const getAllURLKeywordsDetailsFunction = async () => {
   return new Promise((resolve, reject) => {
     fs.readFile(urlKeywordsFilePath, "utf8", (err, data) => {
       if (err) {
@@ -22,7 +22,7 @@ const urlKeywordsDetailsFunction = async () => {
   });
 };
 
-const masterKeywordsDetailsFunction = async () => {
+const getAllMasterKeywordsDetailsFunction = async () => {
   return new Promise((resolve, reject) => {
     fs.readFile(masterKeywordsFilePath, "utf8", (err, data) => {
       if (err) {
@@ -35,7 +35,7 @@ const masterKeywordsDetailsFunction = async () => {
   });
 };
 
-const addKeywordWriteFileFunction = (updatedData) => {
+const writeKeywordToFileFunction = (updatedData) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(
       masterKeywordsFilePath,
@@ -53,14 +53,36 @@ const addKeywordWriteFileFunction = (updatedData) => {
   });
 };
 const addKeywordFunction = async (body) => {
-  const existingMasterKeywordsResponse = await masterKeywordsDetailsFunction();
-  const updatedData = {
-    ...JSON.parse(existingMasterKeywordsResponse),
-    ...body,
-  };
-  await addKeywordWriteFileFunction(updatedData);
+  try {
+    const existingMasterKeywordsResponse =
+      await getAllMasterKeywordsDetailsFunction();
+    const parsedMasterKeywords = JSON.parse(existingMasterKeywordsResponse);
+    if (
+      parsedMasterKeywords &&
+      Object.keys(parsedMasterKeywords).includes(Object.keys(body)[0])
+    ) {
+      return {
+        statusCode: 500,
+        message: "Keyword already exist!",
+      };
+    }
+    const updatedData = {
+      ...parsedMasterKeywords,
+      ...body,
+    };
+    await writeKeywordToFileFunction(updatedData);
+    return {
+      statusCode: 200,
+      message: "Keyword added successfully!",
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      message: error,
+    };
+  }
 };
-const addURLFunction = async (parsedExistingURL) => {
+const writeURLToFileFunction = async (parsedExistingURL) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(
       urlKeywordsFilePath,
@@ -79,7 +101,7 @@ const addURLFunction = async (parsedExistingURL) => {
 };
 
 const addKeywordToURLFunction = async (inputKeyword) => {
-  const existingURL = await urlKeywordsDetailsFunction();
+  const existingURL = await getAllURLKeywordsDetailsFunction();
   const parsedExistingURL = JSON.parse(existingURL);
   Object.keys(parsedExistingURL).forEach((item) => {
     parsedExistingURL[item].keywords = {
@@ -87,42 +109,55 @@ const addKeywordToURLFunction = async (inputKeyword) => {
       ...inputKeyword,
     };
   });
-  await addURLFunction(parsedExistingURL);
+  await writeURLToFileFunction(parsedExistingURL);
 };
 
 const removeURLFunction = async (url) => {
-  const urlDetails = await urlKeywordsDetailsFunction();
-  const parsedURL = JSON.parse(urlDetails);
-  delete parsedURL[url];
-  await addURLFunction(parsedURL);
+  try {
+    const urlDetails = await getAllURLKeywordsDetailsFunction();
+    const parsedURL = JSON.parse(urlDetails);
+    delete parsedURL[url];
+    await writeURLToFileFunction(parsedURL);
+    return {
+      statusCode: 200,
+      message: "URL removed successfully",
+    };
+  } catch (error) {
+    console.log("error: ", error);
+    return {
+      statusCode: 500,
+      message: "Internal server error",
+    };
+  }
 };
+
 const editURLFunction = async (urlData) => {
   try {
-    const urlDetails = await urlKeywordsDetailsFunction();
+    const urlDetails = await getAllURLKeywordsDetailsFunction();
     const editedURLDetails = {
       ...JSON.parse(urlDetails),
       ...urlData,
     };
-    await addURLFunction(editedURLDetails);
+    await writeURLToFileFunction(editedURLDetails);
   } catch (error) {
     console.log("error: ", error);
   }
 };
-const removeKeywordFromURLKeywordsFile = async (deleteKeyword) => {
-  const urlDetails = await urlKeywordsDetailsFunction();
+const removeKeywordFromURLKeywordFile = async (deleteKeyword) => {
+  const urlDetails = await getAllURLKeywordsDetailsFunction();
   const parsedURLDetails = JSON.parse(urlDetails);
   for (const key in parsedURLDetails) {
     if (parsedURLDetails[key]?.keywords?.hasOwnProperty(deleteKeyword)) {
       delete parsedURLDetails[key]?.keywords?.[deleteKeyword];
     }
   }
-  await addURLFunction(parsedURLDetails);
+  await writeURLToFileFunction(parsedURLDetails);
 };
 
 const removeKeywordFromMasterKeywordFile = async (deleteKeyword) => {
   try {
     const existingMasterKeywordsResponse =
-      await masterKeywordsDetailsFunction();
+      await getAllMasterKeywordsDetailsFunction();
     const parsedExistingMasterKeywords = JSON.parse(
       existingMasterKeywordsResponse
     );
@@ -131,7 +166,7 @@ const removeKeywordFromMasterKeywordFile = async (deleteKeyword) => {
       Object.keys(parsedExistingMasterKeywords).includes(deleteKeyword)
     ) {
       delete parsedExistingMasterKeywords[deleteKeyword];
-      await addKeywordWriteFileFunction(parsedExistingMasterKeywords);
+      await writeKeywordToFileFunction(parsedExistingMasterKeywords);
     }
   } catch (error) {
     console.log("error: ", error);
@@ -141,25 +176,25 @@ const removeKeywordFromMasterKeywordFile = async (deleteKeyword) => {
 
 const removeKeywordFunction = async (deleteKeyword, res) => {
   try {
-    const responseDetails = await masterKeywordsDetailsFunction();
+    const responseDetails = await getAllMasterKeywordsDetailsFunction();
     const jsonParseResponseDetails = JSON.parse(responseDetails);
     if (
       jsonParseResponseDetails &&
       !Object.keys(jsonParseResponseDetails).includes(deleteKeyword)
     ) {
-      return res.send({ statusCode: 404, message: "Keyword Not found" });
+      return { statusCode: 404, message: "Keyword Not found" };
     }
-    await removeKeywordFromURLKeywordsFile(deleteKeyword);
+    await removeKeywordFromURLKeywordFile(deleteKeyword);
     await removeKeywordFromMasterKeywordFile(deleteKeyword);
-    return res.send({
+    return {
       statusCode: 200,
       message: "Keyword Deleted successfully",
-    });
+    };
   } catch (error) {
-    return res.send({
+    return {
       statusCode: 500,
       message: "Internal server error",
-    });
+    };
   }
 };
 
@@ -168,17 +203,17 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/urlKeywordsDetails", async (req, res) => {
-  const responseDetails = await urlKeywordsDetailsFunction();
+  const responseDetails = await getAllURLKeywordsDetailsFunction();
   res.send(responseDetails);
 });
 
 app.get("/masterKeywordsDetails", async (req, res) => {
-  const responseDetails = await masterKeywordsDetailsFunction();
+  const responseDetails = await getAllMasterKeywordsDetailsFunction();
   res.send(responseDetails);
 });
 app.post("/addURL", async (req, res) => {
-  const urlDetails = await urlKeywordsDetailsFunction();
-  const masterKeywordsDetails = await masterKeywordsDetailsFunction();
+  const urlDetails = await getAllURLKeywordsDetailsFunction();
+  const masterKeywordsDetails = await getAllMasterKeywordsDetailsFunction();
   const newURLKeywordsObject = {
     ...JSON.parse(urlDetails),
     [req.body.url]: {
@@ -187,12 +222,14 @@ app.post("/addURL", async (req, res) => {
     },
   };
 
-  const responseDetails = await addURLFunction(newURLKeywordsObject);
+  const responseDetails = await writeURLToFileFunction(newURLKeywordsObject);
   res.send(responseDetails);
 });
 app.post("/addKeyword", async (req, res) => {
   const responseDetails = await addKeywordFunction(req.body);
-  await addKeywordToURLFunction(req.body);
+  if (responseDetails.statusCode === 200) {
+    await addKeywordToURLFunction(req.body);
+  }
   res.send(responseDetails);
 });
 app.put("/editURL", async (req, res) => {
@@ -206,7 +243,11 @@ app.delete("/removeURL", async (req, res) => {
 });
 
 app.delete("/removeKeyword", async (req, res) => {
-  await removeKeywordFunction(req.query.deleteKeyword, res);
+  const responseDetails = await removeKeywordFunction(
+    req.query.deleteKeyword,
+    res
+  );
+  res.send(responseDetails);
 });
 
 app.listen(PORT, (error) => {
